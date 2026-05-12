@@ -299,12 +299,24 @@ async function loadFromSupabase(){
       const logRow = data.find(r => r.adjust_log && r.adjust_log.length > 0);
       if(logRow) AL = Array.isArray(logRow.adjust_log) ? logRow.adjust_log : [];
     }
+    // Supabaseにない店舗もSERUM_STOCKから初期化（新店含む）
+    const exclude=['心斎橋スクール','池袋スクール','名古屋スクール','博多スクール','店舗支援部門','スクール部門','産休','商品開発部門','人事部門'];
+    Object.keys(SERUM_STOCK).forEach(k=>{
+      if(exclude.some(e=>k.includes(e)))return;
+      if(!SD[k])initS(k);
+    });
     setSyncStatus('ok','同期済み');
     updateAll();
     renderLog();
   }catch(e){
     setSyncStatus('error','接続エラー');
     console.error('Supabaseエラー:', e);
+    // エラー時もSERUM_STOCKから全店舗初期化
+    const exclude=['心斎橋スクール','池袋スクール','名古屋スクール','博多スクール','店舗支援部門','スクール部門','産休','商品開発部門','人事部門'];
+    Object.keys(SERUM_STOCK).forEach(k=>{
+      if(exclude.some(e=>k.includes(e)))return;
+      if(!SD[k])initS(k);
+    });
     updateAll();
   }
 }
@@ -312,7 +324,8 @@ async function loadFromSupabase(){
 async function saveAll(){
   setSyncStatus('loading','保存中...');
   try{
-    const rows=Object.keys(SD).map((k,idx)=>{
+    const excludeSave=['心斎橋スクール','池袋スクール','名古屋スクール','博多スクール','店舗支援部門','スクール部門','産休','商品開発部門','人事部門'];
+    const rows=Object.keys(SD).filter(k=>!excludeSave.some(e=>k.includes(e))).map((k,idx)=>{
       const d=SD[k];
       return{
         store_key:k,
@@ -544,7 +557,9 @@ function renderStore(){
   renderSHead();
   const isS=curP==='serum';const search=document.getElementById('sch').value.toLowerCase();
   const tbody=document.getElementById('store-body'),tfoot=document.getElementById('store-foot');
+  const excludeKeys=['心斎橋スクール','池袋スクール','名古屋スクール','博多スクール','店舗支援部門','スクール部門','産休','商品開発部門','人事部門'];
   const keys=Object.keys(SD).sort().filter(k=>{
+    if(excludeKeys.some(e=>k.includes(e)))return false;
     if(search&&!k.toLowerCase().includes(search))return false;
     const d=SD[k];const rem=isS?srem(d):trem(d);
     if(curF==='warn'&&rem>10)return false;
