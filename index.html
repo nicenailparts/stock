@@ -351,9 +351,7 @@ async function saveAll(){
 }
 
 function resetSales(){
-  if(!confirm('販売数（CSVで入れた分）をリセットします。
-テスター・社員販売・追加発送など手動で入れたデータはそのまま残ります。
-よろしいですか？'))return;
+  if(!confirm('販売数（CSVで入れた分）をリセットします。\nテスター・社員販売・追加発送など手動で入れたデータはそのまま残ります。\nよろしいですか？'))return;
   Object.keys(SD).forEach(k=>{
     SD[k].sSold=0;
     SD[k].tSold=0;
